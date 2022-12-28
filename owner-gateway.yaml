@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: owner-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: owner-gateway
+  template:
+    metadata:
+      labels:
+        app: owner-gateway
+    spec:
+      containers:
+      - name: owner-gateway
+        image: chungjm0711/take-it-owner-gateway-svc-amd64:3.0
+        env:
+        - name: spring.zipkin.base-url
+          value: http://jaeger-collector.istio-system.svc.cluster.local:9411
+        ports:
+        - containerPort: 8001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: owner-gateway-service
+spec:
+  selector:
+    app: owner-gateway
+  ports:
+  - port: 8001
+    targetPort: 8001

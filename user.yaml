@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: user
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user
+  template:
+    metadata:
+      labels:
+        app: user
+    spec:
+      containers:
+      - name: user
+        image: chungjm0711/take-it-user-svc-amd64:3.0
+        env:
+        - name: spring.datasource.url
+          value: jdbc:mariadb://user-db-service.default.svc.cluster.local:3306/userdb?characterEncoding=UTF-8
+        - name: redirect.url
+          value: https://customer-frontend-service.default.svc.cluster.local:8080
+          #- name: spring.security.oauth2.client.registration.google.redirectionUri
+          #value: http://take-it:30001/login/oauth2/code/google
+          #- name: spring.security.oauth2.client.registration.naver.redirect-uri
+          #value:  http://192.168.21.129.nip.io:30001/login/oauth2/code/naver
+        - name: spring.redis.host
+          value: redis-service.default.svc.cluster.local
+        - name: spring.zipkin.base-url
+          value: http://jaeger-collector.istio-system.svc.cluster.local:9411
+        ports:
+        - containerPort: 9000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: user-service
+spec:
+  selector:
+    app: user
+  ports:
+  - port: 9000
+    targetPort: 9000
